@@ -1,5 +1,6 @@
 const express = require('express');
 const mysql = require('mysql2');
+const inputCheck = require('./utils/inputCheck');
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -21,18 +22,37 @@ const db = mysql.createConnection(
   console.log('Connected to the election database.')
 );
 
-app.get('/', (req, res) => {
+// Get all candidates
+app.get('/api/candidates', (req, res) => {
+  const sql = `SELECT * FROM candidates`;
+
+  db.query(sql, (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
     res.json({
-      message: 'Hello World'
+      message: 'success',
+      data: rows
     });
   });
+});
 
-  // GET a single candidate
-db.query(`SELECT * FROM candidates WHERE id = 1`, (err, row) => {
-  if (err) {
-    console.log(err);
-  }
-  console.log(row);
+// Get a single candidate
+app.get('/api/candidate/:id', (req, res) => {
+  const sql = `SELECT * FROM candidates WHERE id = ?`;
+  const params = [req.params.id];
+
+  db.query(sql, params, (err, row) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json({
+      message: 'success',
+      data: row
+    });
+  });
 });
 
 // db.query(`SELECT * FROM candidates`, (err, rows) => {
